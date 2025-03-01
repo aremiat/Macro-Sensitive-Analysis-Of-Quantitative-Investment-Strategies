@@ -18,9 +18,23 @@ Results Visualization: Creating charts to interpret trends and anomalies.
 
 Value and Momentum Strategies
 
-Value Strategy: This approach selects assets based on fundamental valuation metrics such as price-to-earnings (P/E) ratio, price-to-book (P/B) ratio, or dividend yield. Assets that appear undervalued relative to their intrinsic value are chosen for the portfolio.
+Momentum Strategy:
 
-Momentum Strategy: This strategy involves selecting assets that have exhibited strong past performance over a given period, assuming that trends will continue in the short term. It is based on historical price movements and trading volume to identify assets with positive momentum.
+Compute the 12-month return (excluding the last month) for each asset.
+
+Select the 10 best-performing assets for buying and the 10 worst-performing assets for short selling.
+
+Assign positive/negative weights and normalize (sum of absolute values = 1).
+
+Value Strategy:
+
+Compute a valuation coefficient:
+
+coeff = Pt / (Pt - Pt-5 years)
+
+Select the 10 assets with the lowest coefficient for buying and the 10 with the highest coefficient for short selling.
+
+Assign weights and normalize.
 
 🔧 Global Architecture
 
