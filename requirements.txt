@@ -1,0 +1,13 @@
+Rechercher -> Gestionnaire de console
+
+
+Install-Package YahooFinanceApi
+Install-Package Newtonsoft.Json
+Install-Package System.Net.Http
+Install-Package System.Data
+Install-Package System.Linq
+Install-Package System.Web
+Install-Package ScottPlot
+Install-Package NUnit
+Install-Package NUnit3TestAdapter
+Install-Package Microsoft.NET.Test.Sdk
