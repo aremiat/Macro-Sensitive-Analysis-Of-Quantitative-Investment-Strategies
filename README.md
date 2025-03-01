@@ -16,7 +16,7 @@ Modeling: Applying quantitative strategies and evaluating performance.
 
 Results Visualization: Creating charts to interpret trends and anomalies.
 
-Value and Momentum Strategies
+📊 Value and Momentum Strategies
 
 Momentum Strategy:
 
