@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using BacktestUI;
+using System.Windows.Forms;
 
 /// < summary >
 /// Classe principale qui instancie la base de données, définit les périodes et stratégies,
@@ -11,7 +13,7 @@ public class Program
 {
     public static void Main(string[] args)
     {
-        // Chemin complet du fichier CSV source pour les données (à adapter si nécessaire).
+        // Chemin complet du fichier CSV source pour les données
         string universFilePath = @"C:\Users\admin\Desktop\cours dauphine\S1\C#\projet\Univers.csv";
 
         // Instanciation de la base de données.
@@ -63,9 +65,6 @@ public class Program
         Console.ReadKey();
     }
 }
-//using System;
-//using System.Windows.Forms;
-//using BacktestUI;
 
 //public static class Program
 //{
