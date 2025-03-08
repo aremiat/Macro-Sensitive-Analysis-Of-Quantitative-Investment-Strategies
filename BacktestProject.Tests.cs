@@ -15,9 +15,11 @@ using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Reflection;
 
 // ---------------------------------------------------------------------------
-// EXEMPLE DE TESTS POUR LA CLASSE "Database"
+// TESTS POUR LA CLASSE "Database"
 // ---------------------------------------------------------------------------
 namespace BacktestProject.Tests
 {
@@ -87,7 +89,7 @@ namespace BacktestProject.Tests
     }
 
     // ---------------------------------------------------------------------------
-    // EXEMPLE DE TESTS POUR LES STRATEGIES (MomentumStrategy, ValueStrategy)
+    // TESTS POUR LES STRATEGIES (MomentumStrategy, ValueStrategy)
     // ---------------------------------------------------------------------------
     [TestFixture]
     public class StrategyTests
@@ -108,6 +110,7 @@ namespace BacktestProject.Tests
             DateTime refDate = new DateTime(2020, 1, 1);
             var weights = momentum.CalculateWeight(refDate);
 
+
             double sumAbs = 0;
             foreach (var w in weights.Values)
                 sumAbs += Math.Abs(w);
@@ -119,33 +122,20 @@ namespace BacktestProject.Tests
         }
 
         [Test]
-        public void ValueStrategy_ShouldHandleMissingDataGracefully()
+        public void ValueStrategy_ShouldThrowException_WhenDataIsInsufficient()
         {
             ValueStrategy valueStrat = new ValueStrategy(_db);
 
             DateTime refDate = new DateTime(1986, 1, 1);
-            var weights = valueStrat.CalculateWeight(refDate);
 
-            // Vérifie que le dictionnaire n'est pas null
-            Assert.That(weights.Count, Is.GreaterThan(0),
-                "Le poids des composantes ne doit pas être vide.");
+            var ex = Assert.Throws<Exception>(() => valueStrat.CalculateWeight(refDate));
 
-            double sumAbs = 0;
-            foreach (var w in weights.Values)
-                sumAbs += Math.Abs(w);
-
-            // Si la période est trop ancienne et qu'il n'y a pas 5 ans de data,
-            // le dictionnaire peut être vide. On adapte le test :
-            if (weights.Count > 0)
-            {
-                Assert.That(sumAbs, Is.EqualTo(1.0).Within(1e-3),
-                    "La somme des poids absolus doit être égale à 1 si assez d’actifs.");
-            }
+            Assert.That(ex.Message, Does.Contain("pas assez d'historique (besoin de 5 ans avant 1986-01-01)"));
         }
     }
 
     // ---------------------------------------------------------------------------
-    // EXEMPLE DE TESTS POUR LA CLASSE "Backtest"
+    // TESTS POUR LA CLASSE "Backtest"
     // ---------------------------------------------------------------------------
     [TestFixture]
     public class BacktestTests
@@ -174,15 +164,12 @@ namespace BacktestProject.Tests
         {
             Backtest backtest = new Backtest(_db, _periods, _strategies);
 
-            // Vérifie que Run() ne lève pas d'exception
             Assert.DoesNotThrow(() => backtest.Run());
-
-
 
         }
 
         [Test]
-        public void Run_ShouldHandleEmptyDataGracefully()
+        public void Run_ShouldHandleEmptyData()
         {
             // Cas extrême : période hors-bornes
             var emptyPeriods = new List<(DateTime, DateTime, string)>
@@ -194,10 +181,11 @@ namespace BacktestProject.Tests
             Assert.DoesNotThrow(() => backtest.Run());
 
         }
+        
     }
 
     // ---------------------------------------------------------------------------
-    // EXEMPLE DE TESTS POUR LA CLASSE "Results"
+    // TESTS POUR LA CLASSE "Results"
     // ---------------------------------------------------------------------------
     [TestFixture]
     public class ResultsTests
