@@ -21,7 +21,7 @@ Data Cleaning and Transformation
 Modeling
 
     Quantitative Strategies:
-    Two main strategies—Momentum and Value—are applied and their performance is evaluated.
+    Two main strategies Momentum and Value are applied and their performance is evaluated.
 
 Results Visualization
 
@@ -42,8 +42,7 @@ Value Strategy
 
     Valuation Coefficient:
     Compute the coefficient as follows:
-    coeff=PtPt−Pt−5 years
-    coeff=Pt​−Pt−5years​Pt​​
+    coeff=Pt/Pt−Pt_5years
     Selection:
     Choose the 10 assets with the lowest coefficient for buying and the 10 assets with the highest coefficient for short selling.
     Weighting:
