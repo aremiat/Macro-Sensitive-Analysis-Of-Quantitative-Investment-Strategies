@@ -1,8 +1,8 @@
 Macro-Sensitive Analysis of Quantitative Investment Strategies
 
 This project explores the macroeconomic dynamics of quantitative investment strategies. Its primary objective is to assess how periods of macroeconomic stress influence strategy performance.
-Data
 
+Data
 The project utilizes data sourced from public economic and financial databases (NBER and Yahoo Finance). Please ensure you have the necessary permissions before using this data.
 Methodology
 Data Collection
@@ -69,7 +69,7 @@ Results
 
     Correlation:
     The two strategies exhibit negative correlation:
-        −0.23−0.23 during recession/expansion periods.
-        −0.35−0.35 during inflationary periods.
+        −0.23 during recession/expansion periods.
+        −0.35 during inflationary periods.
 
     Notably, during periods of inflation, both strategies tend to become even less correlated.
