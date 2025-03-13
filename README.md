@@ -5,7 +5,9 @@ This project explores the macroeconomic dynamics of quantitative investment stra
 Data
 
 The project utilizes data sourced from public economic and financial databases (NBER and Yahoo Finance). Please ensure you have the necessary permissions before using this data.
+
 Methodology
+
 Data Collection
 
     Universe Construction:
