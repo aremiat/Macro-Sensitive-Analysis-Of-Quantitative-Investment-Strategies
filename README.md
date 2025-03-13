@@ -1,58 +1,75 @@
-# Macro-Sensitive-Analysis-Of-Quantitative-Investement-Strategies
+Macro-Sensitive Analysis of Quantitative Investment Strategies
 
-This project explores the macroeconomic analysis of quantitative investment strategies. The objective is to assess how macroeconomic stress periods influence the performance of quantitative strategies.
+This project explores the macroeconomic dynamics of quantitative investment strategies. Its primary objective is to assess how periods of macroeconomic stress influence strategy performance.
+Data
 
-📂 Data
+The project utilizes data sourced from public economic and financial databases (NBER and Yahoo Finance). Please ensure you have the necessary permissions before using this data.
+Methodology
+Data Collection
 
-The data used in this project comes from public economic and financial source (NBER and Yahoo Finance). Ensure you have the necessary permissions before using them.
+    Universe Construction:
+    A universe of 341 US stocks is built with a sector composition closely aligned with that of the S&P 500.
 
-📈 Methodology
+Data Cleaning and Transformation
 
-Data Collection: Create a universe of 341 US stocks, with a sector composition that is close to the SP500.
+    Preparation:
+    Datasets are cleaned, prepared, and segmented to facilitate detailed analysis.
 
-Data Cleaning and Transformation: Preparing datasets for analysis and segmenting data.
+Modeling
 
-Modeling: Applying quantitative strategies and evaluating performance.
+    Quantitative Strategies:
+    Two main strategies—Momentum and Value—are applied and their performance is evaluated.
 
-Results Visualization: Creating charts to interpret trends and anomalies.
+Results Visualization
 
-📊 Value and Momentum Strategies
+    Graphical Analysis:
+    Charts are generated to interpret trends and identify anomalies in the data.
 
-Momentum Strategy:
+Strategies
+Momentum Strategy
 
-Compute the 12-month return (excluding the last month) for each asset.
+    Computation:
+    Calculate the 12-month return (excluding the last month) for each asset.
+    Selection:
+    Identify the 10 best-performing assets for long positions and the 10 worst-performing assets for short positions.
+    Weighting:
+    Assign positive weights to the long positions and negative weights to the short positions, normalizing such that the sum of the absolute weights equals 1.
 
-Select the 10 best-performing assets for buying and the 10 worst-performing assets for short selling.
+Value Strategy
 
-Assign positive/negative weights and normalize (sum of absolute values = 1).
+    Valuation Coefficient:
+    Compute the coefficient as follows:
+    coeff=PtPt−Pt−5 years
+    coeff=Pt​−Pt−5years​Pt​​
+    Selection:
+    Choose the 10 assets with the lowest coefficient for buying and the 10 assets with the highest coefficient for short selling.
+    Weighting:
+    Assign and normalize weights similarly to the Momentum Strategy.
 
-Value Strategy:
+Global Architecture
 
-Compute a valuation coefficient:
+The project is structured into four main modules, following a linear processing flow:
 
-coeff = Pt / (Pt - Pt-5 years)
-
-Select the 10 assets with the lowest coefficient for buying and the 10 with the highest coefficient for short selling.
-
-Assign weights and normalize.
-
-🔧 Global Architecture
-
-The project is structured around four main modules, following a linear processing flow:
-
-Module Data → Module Strategies → Module Backtest → Module Reporting
-
-Module Data: Loading, filtering, and segmenting historical data.
-
-Module Strategies: Implementation of StrategyBase, MomentumStrategy, and ValueStrategy.
-
-Module Backtest: Portfolio simulation with monthly rebalancing.
-
-Module Reporting: Calculation of key performance indicators (Sharpe ratio, volatility, returns) and generation of graphical/CSV reports.
+    Data Module:
+    Handles loading, filtering, and segmenting historical data.
+    Strategies Module:
+    Implements the StrategyBase, MomentumStrategy, and ValueStrategy.
+    Backtest Module:
+    Simulates the portfolio with monthly rebalancing.
+    Reporting Module:
+    Calculates key performance indicators (such as Sharpe ratio, volatility, and returns) and generates graphical and CSV reports.
 
 Results
 
-Overall, our results indicates that Momentum performs better during expansion/recesson than value with an average Sharpe ratio of 0.76 compare to 0.04 for Value.
-On the other hand, during period of inflation, Value tends to perform better with an average Sharpe ratio of 0.11 compare to 0.045 for Momentum.
-Both strategies are negatively correlated (-0.23 in recession/expansion and -0.35 in inflation up-down). 
-It is interresting to note that during periods of inflation both strategies tend to uncorrolate even more.
+    Momentum Strategy:
+    Performs better during expansion/recession periods with an average Sharpe ratio of 0.76 compared to 0.04 for the Value Strategy.
+
+    Value Strategy:
+    Tends to perform better during inflationary periods, showing an average Sharpe ratio of 0.11 versus 0.045 for the Momentum Strategy.
+
+    Correlation:
+    The two strategies exhibit negative correlation:
+        −0.23−0.23 during recession/expansion periods.
+        −0.35−0.35 during inflationary periods.
+
+    Notably, during periods of inflation, both strategies tend to become even less correlated.
