@@ -77,16 +77,16 @@ public class Backtest
                     continue;
                 }
 
-                // Déterminer les dates de rebalancement (le premier jour ouvrable de chaque mois)
+                // Déterminer les dates de rebalancement le premier jour ouvrable de chaque mois
                 var rebalancingDates = filteredLogReturns
                     .Select(kvp => kvp.Key)
-                    .GroupBy(date => new { date.Year, date.Month })
+                    .GroupBy(date => new { date.Year, date.Month }) // regroupement par année, mois
                     .Select(g => g.Min())
                     .OrderBy(d => d)
                     .ToList();
 
                 // Simuler le portefeuille
-                double portfolioValue = 1.0;
+                double portfolioValue = 100;
                 var portfolioHistory = new Dictionary<DateTime, double>
                 {
                     { filteredLogReturns.First().Key, portfolioValue }
@@ -99,8 +99,7 @@ public class Backtest
                     DateTime currentRebalance = rebalancingDates[i];
                     DateTime nextRebalance = rebalancingDates[i + 1];
 
-                    // Calcule les poids de la stratégie à la date de rebalancement
-                    var rawWeights = strategy.CalculateWeight(currentRebalance);
+                    var rawWeights = strategy.CalculateWeight(currentRebalance, 10);
 
                     var weights = EnforceWeightConstraints(rawWeights,0.005, 0.20);
 
@@ -149,16 +148,15 @@ public class Backtest
                     }
                 }
 
-                // 4. Calculer les indicateurs de performance (Sharpe, etc.) pour la période
+                // Calculer les indicateurs de performance pour la période
                 Results results = Results.Calculate(portfolioHistory);
                 Console.WriteLine($"[{period.label}] Stratégie {strategyName} => Sharpe: {results.SharpeRatio:F2}, Annualized Return: {results.AnnualizedReturn:P2}");
 
-                // 5. Construire un dossier de sauvegarde (ex. : "MomentumStrategy_20010401-20011101") pour les graphiques
+                // Construire un dossier de sauvegarde (ex. : "MomentumStrategy_20010401-20011101") pour les graphiques
                 Plotter.PlotDailyPerformance(portfolioHistory, folderName);
                 Plotter.PlotReturnHistogram(portfolioHistory, folderName);
                 Plotter.PlotDailyReturns(portfolioHistory, folderName);
 
-                // 6. Sauvegarder les résultats dans le CSV global
                 Plotter.CsvPerformanceLogger.SavePerformanceMetrics(results, period.start, period.end, period.label, strategyName);
             }
         }
@@ -194,7 +192,7 @@ public class Backtest
             lines.Add($"{w.Key},{weightPercent:F2}");
         }
 
-        // Écrit toutes les lignes dans le fichier (on écrase s'il existe déjà)
+        // Écrit toutes les lignes dans le fichier, on écrase s'il existe déjà
         File.WriteAllLines(filePath, lines);
 
         Console.WriteLine($"Composition du portefeuille sauvegardée sous '{filePath}'.");
@@ -206,7 +204,7 @@ public class Backtest
     /// </summary>
     /// <param name="weights">Dictionnaire (ticker -> poids) renvoyé par la stratégie.</param>
     /// <param name="minAbsWeight">Poids absolu minimal (ex. 0.005 pour 0.5%).</param>
-    /// <param name="maxAbsWeight">Poids absolu maximal (ex. 0.10 pour 10%).</param>
+    /// <param name="maxAbsWeight">Poids absolu maximal (ex. 0.2 pour 20%).</param>
     /// <returns>Dictionnaire de poids ajustés et renormalisés.</returns>
     private Dictionary<string, double> EnforceWeightConstraints(
         Dictionary<string, double> weights,
@@ -224,7 +222,7 @@ public class Backtest
                 shorts[kvp.Key] = Math.Abs(kvp.Value);
         }
 
-        // Traitement itératif pour un groupe (les valeurs sont positives)
+        // Traitement itératif pour un groupe
         Dictionary<string, double> EnforceConstraintsForGroup(Dictionary<string, double> group, double min, double max)
         {
             const int maxIterations = 100;

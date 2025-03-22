@@ -21,14 +21,14 @@ public class Program
 
         // Définition des périodes à tester.
         var periods = new List<(DateTime start, DateTime end, string label)>
-            {
+           {
                 (new DateTime(2001, 4, 1), new DateTime(2001, 11, 1), "Recession US 1: Avril 2001 - Novembre 2001"),
                 (new DateTime(2007, 12, 1), new DateTime(2009, 6, 1), "Recession US 2: Décembre 2007 - Juin 2009"),
                 (new DateTime(2020, 2, 1), new DateTime(2020, 4, 1), "Recession US 3: Février 2020 - Avril 2020"),
                 (new DateTime(2001, 11, 1), new DateTime(2007, 12, 1), "Expansion US 1: Novembre 2001 – Décembre 2007"),
                 (new DateTime(2012, 2, 1), new DateTime(2020, 2, 1), "Expansion US 2: Juin 2009 – Février 2020"),
                 (new DateTime(2020, 4, 1), new DateTime(2023, 12, 1), "Expansion US 3: Avril 2020 – Décembre 2023")
-            };
+           };
 
         //var periods = new List<(DateTime start, DateTime end, string label)>
         //    {

@@ -100,7 +100,7 @@ public class Results
         // Calcul de la volatilité annualisée (en supposant 252 jours de bourse par an)
         double annualizedVolatility = dailyStdDev * Math.Sqrt(252);
 
-        // Volatilité totale (non annualisée)
+        // Volatilité totale (non annualisée), jours de bourse
         double totalVolatility = dailyStdDev * Math.Sqrt(dailyReturns.Count);
 
         // Ratio de Sharpe (taux sans risque supposé annualisé)

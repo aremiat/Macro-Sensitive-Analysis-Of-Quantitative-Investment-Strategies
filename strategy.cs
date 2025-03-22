@@ -31,7 +31,7 @@ public abstract class StrategyBase
     /// <returns>
     /// Un dictionnaire contenant en clé le ticker de l'actif et en valeur la pondération (positive ou négative).
     /// </returns>
-    public abstract Dictionary<string, double> CalculateWeight(DateTime startDate);
+    public abstract Dictionary<string, double> CalculateWeight(DateTime startDate, int numactifs);
 }
 
 /// <summary>
@@ -59,7 +59,7 @@ public class MomentumStrategy : StrategyBase
     /// Un dictionnaire avec pour chaque ticker, une pondération positive (meilleurs rendements) ou négative (pires rendements).
     /// La somme des poids absolus est normalisée à 1.
     /// </returns>
-    public override Dictionary<string, double> CalculateWeight(DateTime startDate)
+    public override Dictionary<string, double> CalculateWeight(DateTime startDate, int numactifs)
     {
         // Déclaration des variables en dehors du bloc conditionnel
         DateTime firstDate, lastDate;
@@ -103,10 +103,6 @@ public class MomentumStrategy : StrategyBase
                 double lastPrice = lastPrices[ticker];
                 percentages[ticker] = ((lastPrice - firstPrice) / firstPrice) * 100;
             }
-            else
-            {
-                percentages[ticker] = 0;
-            }
 
         }
 
@@ -115,8 +111,8 @@ public class MomentumStrategy : StrategyBase
             .OrderByDescending(kvp => kvp.Value)
             .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 
-        var bestReturns = sortedPercentages.Take(10).ToList();
-        var worstReturns = sortedPercentages.Reverse().Take(10).ToList();
+        var bestReturns = sortedPercentages.Take(numactifs).ToList();
+        var worstReturns = sortedPercentages.Reverse().Take(numactifs).ToList();
 
         var weightedReturns = new Dictionary<string, double>();
         int n = bestReturns.Count;
@@ -139,7 +135,16 @@ public class MomentumStrategy : StrategyBase
             .ToDictionary(kvp => kvp.Key, kvp => kvp.Value * adjustmentFactor);
 
         double finalAbsWeightSum = adjustedWeightedReturns.Values.Sum(w => Math.Abs(w));
-        Console.WriteLine($"Somme des poids absolus après normalisation : {finalAbsWeightSum}");
+        double epsilon = 1e-6; // seuil de tolérance
+        // Vérification de la somme des poids
+        if (Math.Abs(finalAbsWeightSum - 1) > epsilon)
+        {
+            throw new Exception($"La somme des poids absolus ({finalAbsWeightSum}) n'est pas égale à 1 !");
+        }
+        else
+        {
+            Console.WriteLine($"Somme des poids absolus après normalisation : {finalAbsWeightSum}");
+        }
 
         return adjustedWeightedReturns;
     }
@@ -169,7 +174,7 @@ public class ValueStrategy : StrategyBase
     /// Un dictionnaire avec pour chaque ticker, une pondération positive (actifs chers) ou négative (actifs moins chers).
     /// La somme des poids absolus est normalisée à 1.
     /// </returns>
-    public override Dictionary<string, double> CalculateWeight(DateTime startDate)
+    public override Dictionary<string, double> CalculateWeight(DateTime startDate, int numactifs)
     {
         // Définir la période de calcul (5 ans en arrière)
         DateTime startDateStrat = startDate.AddYears(-5);
@@ -228,8 +233,8 @@ public class ValueStrategy : StrategyBase
             .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 
         // Sélectionner les 10 plus chers et 10 moins chers
-        var expensiveAssets = rankedCoefficients.Take(10).ToList();
-        var cheapAssets = rankedCoefficients.Reverse().Take(10).ToList();
+        var expensiveAssets = rankedCoefficients.Take(numactifs).ToList();
+        var cheapAssets = rankedCoefficients.Reverse().Take(numactifs).ToList();
 
         // Calcul du total pour normaliser
         double totalWeight = expensiveAssets.Sum(r => Math.Abs(r.Value))

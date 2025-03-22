@@ -77,14 +77,19 @@ namespace BacktestProject.Tests
         }
 
         [Test]
-        public void GetClosestDate_ShouldReturnOldest_WhenNoPreviousDateExists()
+        public void GetClosestDate_ShouldReturnPreviousBusinessDay()
         {
+            // Arrange
             Database db = new Database(ValidCsvPath);
-            DateTime targetDate = new DateTime(1900, 1, 1);
+            // Supposons que le 1er janvier 2023 est un dimanche,
+            // et que le vendredi précédent (30 décembre 2022) est présent dans les données.
+            DateTime targetDate = new DateTime(2023, 1, 1);
+            DateTime expectedBusinessDay = new DateTime(2022, 12, 30);
+
             DateTime closest = db.GetClosestDate(targetDate);
 
-            DateTime expectedOldest = db.GetFirstDate();
-            Assert.That(closest, Is.EqualTo(expectedOldest));
+            Assert.That(closest, Is.EqualTo(expectedBusinessDay),
+                "Pour une date cible tombant un dimanche, la date retournée doit être le vendredi précédent.");
         }
     }
 
@@ -108,7 +113,7 @@ namespace BacktestProject.Tests
             MomentumStrategy momentum = new MomentumStrategy(_db);
 
             DateTime refDate = new DateTime(2020, 1, 1);
-            var weights = momentum.CalculateWeight(refDate);
+            var weights = momentum.CalculateWeight(refDate, 10);
 
 
             double sumAbs = 0;
@@ -128,9 +133,28 @@ namespace BacktestProject.Tests
 
             DateTime refDate = new DateTime(1986, 1, 1);
 
-            var ex = Assert.Throws<Exception>(() => valueStrat.CalculateWeight(refDate));
+            var ex = Assert.Throws<Exception>(() => valueStrat.CalculateWeight(refDate, 10));
 
             Assert.That(ex.Message, Does.Contain("pas assez d'historique (besoin de 5 ans avant 1986-01-01)"));
+        }
+
+        [Test]
+        public void ValueStrategy_ShouldSelectAssetsCorrectly()
+        {
+            ValueStrategy valueStrat = new ValueStrategy(_db);
+
+            DateTime refDate = new DateTime(2020, 1, 1);
+            var weights = valueStrat.CalculateWeight(refDate, 10);
+
+
+            double sumAbs = 0;
+            foreach (var w in weights.Values)
+                sumAbs += Math.Abs(w);
+
+            // Vérifie que la somme absolue des poids est ~ 1
+            Assert.That(sumAbs, Is.EqualTo(1.0).Within(1e-3),
+                "La somme des poids absolus doit être égale à 1.");
+
         }
     }
 
@@ -181,7 +205,72 @@ namespace BacktestProject.Tests
             Assert.DoesNotThrow(() => backtest.Run());
 
         }
-        
+
+        [Test]
+        public void EnforceWeightConstraints_ShouldClipWeightsAndConverge()
+        {
+            // Arrange
+            var initialWeights = new Dictionary<string, double>
+            {
+                // 10 actifs positifs
+                { "Asset1", 0.50 },     // dépasse le maximum autorisé
+                { "Asset2", 0.001 },    // en dessous du minimum autorisé
+                { "Asset3", 0.15 },     // dans l'intervalle autorisé
+                { "Asset4", 0.25 },     // dépasse le maximum autorisé
+                { "Asset5", 0.006 },    // égal au minimum autorisé
+                { "Asset6", 0.19 },     // dans l'intervalle autorisé
+                { "Asset7", 0.12 },     // dans l'intervalle autorisé
+                { "Asset8", 0.08 },     // dans l'intervalle autorisé
+                { "Asset9", 0.04 },     // en dessous du minimum autorisé
+                { "Asset10", 0.21 },    // dépasse le maximum autorisé
+
+                // 10 actifs négatifs
+                { "Asset11", -0.50 },   // dépasse le maximum autorisé (short trop important)
+                { "Asset12", -0.001 },  // en dessous du minimum autorisé (short trop faible)
+                { "Asset13", -0.15 },   // dépasse le maximum autorisé (short)
+                { "Asset14", -0.25 },   // dépasse le maximum autorisé (short)
+                { "Asset15", -0.006 },   // dans l'intervalle autorisé
+                { "Asset16", -0.19 },   // dans l'intervalle autorisé
+                { "Asset17", -0.12 },  // égal au minimum autorisé en valeur absolue
+                { "Asset18", -0.08 },   // dans l'intervalle autorisé
+                { "Asset19", -0.04 },   // dans l'intervalle autorisé
+                { "Asset20", -0.21 }    // dans l'intervalle autorisé
+            };
+
+            double minAbs = 0.005; // minimum autorisé (0.5%)
+            double maxAbs = 0.20;  // maximum autorisé (20%)
+
+            double totalAbs = initialWeights.Sum(w => Math.Abs(w.Value));
+            var normalizedWeights = initialWeights
+                .ToDictionary(kvp => kvp.Key, kvp => kvp.Value / totalAbs);
+
+            var backtest = new Backtest(null, new List<(DateTime, DateTime, string)>(), new List<StrategyBase>());
+
+            // Utilisation de la réflexion pour accéder à la méthode privée EnforceWeightConstraints
+            MethodInfo method = typeof(Backtest).GetMethod("EnforceWeightConstraints",
+                BindingFlags.NonPublic | BindingFlags.Instance);
+            Assert.That(method, Is.Not.Null, "La méthode EnforceWeightConstraints n'a pas été trouvée via réflexion.");
+
+            // Act
+            var adjustedWeights = (Dictionary<string, double>)method.Invoke(backtest, new object[] { normalizedWeights, minAbs, maxAbs });
+
+
+            // Vérifier que pour chaque actif, le poids (en valeur absolue) est dans l'intervalle [minAbs, maxAbs]
+            foreach (var weight in adjustedWeights.Values)
+            {
+                double absWeight = Math.Abs(weight);
+                Assert.That(absWeight, Is.GreaterThanOrEqualTo(minAbs),
+                    $"Le poids absolu {absWeight} est inférieur au minimum autorisé de {minAbs}.");
+                Assert.That(absWeight, Is.LessThanOrEqualTo(maxAbs),
+                    $"Le poids absolu {absWeight} est supérieur au maximum autorisé de {maxAbs}.");
+            }
+
+            // Vérifier que la somme des poids en valeur absolue est normalisée à 1 (avec tolérance numérique)
+            double sumAbs = adjustedWeights.Values.Sum(x => Math.Abs(x));
+            Assert.That(sumAbs, Is.EqualTo(1.0).Within(1e-6),
+                "La somme des poids absolus doit être normalisée à 1.");
+        }
+
     }
 
     // ---------------------------------------------------------------------------

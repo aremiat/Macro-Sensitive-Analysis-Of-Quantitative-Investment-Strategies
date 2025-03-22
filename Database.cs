@@ -131,7 +131,7 @@ public class Database
         var result = new Dictionary<DateTime, Dictionary<string, double>>();
 
         // Parcours des données pour filtrer par date
-        // on regarde pour chaque [dictionnaire date, dictionnaire (Ticker,date) ] si la date est comprise on récupére row
+        // on regarde pour chaque [dictionnaire date, dictionnaire (Ticker,prix) ] si la date est comprise on récupére row
         foreach (var entry in _data)
         {
             if (entry.Key >= normalizedStartDate && entry.Key <= normalizedEndDate)
